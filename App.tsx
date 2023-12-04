@@ -24,7 +24,20 @@ const TabNavigator: React.FC = () => (
     })}
   >
     <Tab.Screen name="ContactList" component={ContactList} />
-    <Tab.Screen name="FavoriteContact" component={FavoriteContact} />
+    <Tab.Screen
+      name="Favourite contacts"
+      component={FavoriteContact}
+      options={{
+        tabBarLabel: ({ focused, color }) => {     
+
+          return <Text style={{ color, fontSize: 16, fontWeight: focused ? 'bold' : 'normal' }}>Favourites</Text>;
+        },
+        tabBarIcon:()=>{
+          return <Text>⭐ </Text>  
+      }
+      }}
+      
+      />
   </Tab.Navigator>
 );
 

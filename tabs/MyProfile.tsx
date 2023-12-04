@@ -8,11 +8,10 @@ import {
   StatusBar,
   TouchableOpacity,
   Alert,
+  Image,
 } from 'react-native';
-import { getColorByLetter } from '../utils/jsfile';
 import { RouteProp } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
-import API_URL from '../utils/environment';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { ContactInfo } from '../components/contactIcon';
 
@@ -29,20 +28,20 @@ const MyProfile: React.FC<MyProfileProps> = ({ navigation, route }) => {
     displayName: '',
     color: '',
     mobile: '',
-    landline: '',
+    email: '',
       favorite: false,
       image: ''
   });
 
   useEffect(() => {
     if (route.params?.contactInfo) {
-      const { id, displayName, mobile, landline } = route.params.contactInfo;
+      const { id, displayName, mobile, email } = route.params.contactInfo;
       setContactInfo({
         id,
         displayName,
-        color: getColorByLetter(displayName[0]),
+        color: '#E1E8FF',
         mobile,
-        landline,
+        email,
         favorite: false,
         image: ''
       });
@@ -62,10 +61,7 @@ const MyProfile: React.FC<MyProfileProps> = ({ navigation, route }) => {
       await AsyncStorage.multiRemove(keysToDelete);
   
       console.warn('Contact deleted');
-  
-      // Update the contact list state in the 'ContactList' screen if needed
-  
-      // Navigate to the 'ContactList' screen
+
       navigation.navigate('ContactList');
     } catch (error) {
       console.error('Error deleting contact:', error);
@@ -74,57 +70,38 @@ const MyProfile: React.FC<MyProfileProps> = ({ navigation, route }) => {
   
   
   
+  const addToFavorite = async (updateContactList: () => void, updateFavoriteList: () => void): Promise<void> => {
+    try {
+      const contactId = contactCardInfo.id.replace('contact_', ''); // Use contactCardInfo instead of updatedContactInfo
+      const storedData = await AsyncStorage.getItem(contactId);
   
+      if (storedData) {
+        const parsedData: ContactInfo = JSON.parse(storedData);
+        const updatedData = { ...parsedData, favorite: true };
   
-  function addToFavorite(updateContactList: () => void): void {
-    // Assuming that contactCardInfo is a state variable.
-    // You need to update the favorite status of the contact.
-    const updatedContactInfo = { ...contactCardInfo, favorite: true };
+        await AsyncStorage.setItem(contactId, JSON.stringify(updatedData));
   
-    // Update the state with the new contact information.
-    setContactInfo(updatedContactInfo);
+        console.log('Contact marked as favorite in AsyncStorage:', updatedData);
   
-    // Now, you might want to update this information in your persistent storage.
-    // This depends on how you're storing and managing your contact data.
-  
-    // Example: Update AsyncStorage
-    // Note: AsyncStorage is asynchronous, so you can use async/await or handle promises.
-    const updateFavoriteInStorage = async () => {
-      try {
-        const contactId = updatedContactInfo.id.replace('contact_', '');
-  
-        // Fetch the existing data from AsyncStorage
-        const storedData = await AsyncStorage.getItem(contactId);
-  
-        if (storedData) {
-          const parsedData: ContactInfo = JSON.parse(storedData);
-  
-          // Update the favorite status
-          const updatedData = { ...parsedData, favorite: true };
-  
-          // Save the updated data back to AsyncStorage
-          await AsyncStorage.setItem(contactId, JSON.stringify(updatedData));
-  
-          console.log('Contact marked as favorite in AsyncStorage:', updatedData);
-  
-          // Trigger the callback to update the contact list
-          updateContactList();
-        }
-      } catch (error) {
-        console.error('Error updating favorite status in AsyncStorage:', error);
+        updateContactList();
+        updateFavoriteList();
       }
-    };
+    } catch (error) {
+      console.error('Error updating favorite status in AsyncStorage:', error);
+    }
+  };
   
-    updateFavoriteInStorage();
-  }
+
   
   
 
   return (
     <View style={styles.container}>
-      <View style={{ ...styles.backgroundImage, backgroundColor: contactCardInfo.color }}>
-        <Text style={styles.iconText}>👤</Text> 
-
+      <View style={{ ...styles.backgroundImage, backgroundColor: '#E1E8FF' }}>
+<Image
+                        style={{width: 80, height: 80, borderRadius: 50}}
+                        source={require('../images/download.png')}
+                      />
         <TouchableOpacity
   onPress={() =>
     Alert.alert('Delete', 'Deleted contact not restored', [
@@ -135,7 +112,7 @@ const MyProfile: React.FC<MyProfileProps> = ({ navigation, route }) => {
       },
       {
         text: 'OK',
-        onPress: () => deleteContact(contactCardInfo.id.replace('contact_', '')), // <-- Remove the 'contact_' prefix
+        onPress: () => deleteContact(contactCardInfo.id.replace('contact_', '')),
         style: 'default',
       },
     ])
@@ -155,7 +132,7 @@ const MyProfile: React.FC<MyProfileProps> = ({ navigation, route }) => {
               },
               {
                 text: 'OK',
-                onPress: () => addToFavorite(route.params?.updateContactList), 
+                onPress: () => addToFavorite(route.params?.updateContactList, route.params?.updateFavoriteList),
               },
             ])
           }
@@ -165,7 +142,7 @@ const MyProfile: React.FC<MyProfileProps> = ({ navigation, route }) => {
         </TouchableOpacity>
         <Text style={styles.mainText}>{contactCardInfo.displayName}</Text>
         </View>
-      {/* </ImageBackground> */}
+     
       <View style={{ flex: 1, marginTop: 20, backgroundColor: 'white' }}>
         <View style={styles.phoneNumberContainer}>
           <Text style={{ fontSize: 20, fontWeight: 'bold', marginLeft: 10 }}>
@@ -175,9 +152,9 @@ const MyProfile: React.FC<MyProfileProps> = ({ navigation, route }) => {
         </View>
         <View style={styles.phoneNumberContainer}>
           <Text style={{ fontSize: 20, fontWeight: 'bold', marginLeft: 10 }}>
-            Landline: +91 {contactCardInfo.landline}
+            Email:  {contactCardInfo.email}
           </Text>
-          <Text style={styles.iconText}>📞</Text>
+          <Text style={styles.iconText}>✉️</Text>
         </View>
       </View>
     </View>
@@ -200,8 +177,9 @@ const styles = StyleSheet.create({
     bottom: 20,
     left: 20,
     fontSize: 30,
-    color: 'white',
+    color: '#4C6FFF',
     fontWeight: 'bold',
+    textTransform:'uppercase'
   },
   phoneNumberContainer: {
     marginHorizontal: 10,
@@ -220,8 +198,8 @@ const styles = StyleSheet.create({
     borderRadius: 5,
   },
   iconText: {
-    color: 'white',
-    fontSize: 50,
+    color: '#4C6FFF',
+    fontSize: 30,
   },
 });
 

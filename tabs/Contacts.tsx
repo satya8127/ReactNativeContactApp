@@ -5,19 +5,17 @@ import {
   StyleSheet,
   Alert,
   TouchableHighlight,
-  TextInput,
+  TextInput,TouchableOpacity
 } from 'react-native';
 import { useIsFocused } from '@react-navigation/native';
 import { SwipeListView } from 'react-native-swipe-list-view';
-import { GestureHandlerRootView, TouchableOpacity } from 'react-native-gesture-handler';
-import API_URL from '../utils/environment';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import ContactCard, { ContactInfo } from '../components/contactIcon';
-import { getColorByLetter } from '../utils/jsfile';
 
 interface ContactListProps {
-  navigation: any; // Replace with your specific navigation type
-  route: any; // Replace with your specific route type
+  navigation: any; 
+  route: any; 
 }
 
 const ContactList: React.FC<ContactListProps> = ({ navigation, route }) => {
@@ -38,20 +36,18 @@ const ContactList: React.FC<ContactListProps> = ({ navigation, route }) => {
       // Transform loaded data to ContactInfo objects
       const loadedContacts = contactArray
         .map(([key, value]) => {
-          const contactData = JSON.parse(value || ''); // Use an empty string as a default
+          const contactData = JSON.parse(value || ''); 
           return {
             id: key,
-            displayName: contactData?.displayName || '', // Use an empty string as a default
-            hasThumbnail: true, // You may need to update this based on your data structure
-            thumbNailpath: '',
-            color: getColorByLetter(contactData?.displayName[0]), // Assuming getColorByLetter is a function
-            mobile: contactData?.mobile || '', // Use an empty string as a default
-            landline: contactData?.landline || '', // Use an empty string as a default
-            favorite: contactData?.favorite || false, // Use false as a default
-            image: contactData?.image || '', // Use an empty string as a default
+            displayName: contactData?.displayName || '', 
+            color: '#E1E8FF', 
+            mobile: contactData?.mobile || '', 
+            email: contactData?.email || '', 
+            favorite: contactData?.favorite || false, 
+            image: contactData?.image || '', 
           };
         })
-        .filter((contact) => contact.displayName !== ''); // Remove contacts with empty displayName
+        .filter((contact) => contact.displayName !== '');
   
       // Handle the contact data as needed
       console.log('Loaded contacts:', loadedContacts);
@@ -66,17 +62,26 @@ const ContactList: React.FC<ContactListProps> = ({ navigation, route }) => {
     loadContacts();
   }, [isFocused]);
 
-  // const deleteContact = async (id: string) => {
-  //   const url = API_URL;
-  //   let res = await fetch(`${url}/${id}`, {
-  //     method: 'delete',
-  //   });
-  //   res = await res.json();
-  //   if (res) {
-  //     deleteRow(id);
-  //   }
-  // };
+  const deleteContact = async (contactId: string) => {
+    try {
+      console.log('Contact ID to Delete:', contactId);
+  
+      // Fetch all keys from AsyncStorage
+      const allKeys = await AsyncStorage.getAllKeys();
+  
+      // Find the keys that match the contact ID
+      const keysToDelete = allKeys.filter((key) => key.includes(contactId));
+  
+      // Remove all items associated with the contact ID
+      await AsyncStorage.multiRemove(keysToDelete);
+  
+      console.warn('Contact deleted');
 
+      navigation.navigate('ContactList');
+    } catch (error) {
+      console.error('Error deleting contact:', error);
+    }
+  };
   const showProfile = (rowMap: any, rowKey: string) => {
     const selectedContact = listData.find((contact) => contact.id === rowKey);
   
@@ -86,7 +91,7 @@ const ContactList: React.FC<ContactListProps> = ({ navigation, route }) => {
           id: selectedContact.id,
           displayName: selectedContact.displayName,
           mobile: selectedContact.mobile,
-        landline: selectedContact.landline
+        Email: selectedContact.email
         },
         
     // updateContactList: updateContactList,
@@ -111,7 +116,7 @@ const ContactList: React.FC<ContactListProps> = ({ navigation, route }) => {
         <Text>Show</Text>
       </TouchableOpacity>
 
-      {/* <TouchableOpacity
+      <TouchableOpacity
         style={[styles.backRightBtn, styles.backRightBtnRight]}
       >
         <Text>Delete</Text>
@@ -132,17 +137,17 @@ const ContactList: React.FC<ContactListProps> = ({ navigation, route }) => {
             ])
           }
         />
-      </TouchableOpacity> */}
+      </TouchableOpacity>
     </View>
   );
 
 
   const filteredContacts = listData.filter((item) =>
-    item.displayName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    item.mobile?.includes(searchQuery)
-  );
+  item.displayName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+  item.mobile?.includes(searchQuery)
+);
 
-  const renderContactItem = ({ item }: { item: ContactInfo }) => (
+const renderContactItem = ({ item }: { item: ContactInfo }) => (
   <TouchableHighlight
     style={styles.rowFront}
     underlayColor={'#AAA'}
@@ -153,24 +158,26 @@ const ContactList: React.FC<ContactListProps> = ({ navigation, route }) => {
 );
 
 
-  return (
-    <View style={styles.container}>
-      <View>
-        <Text
-          style={styles.searchText}
-          onPress={() => setShowSearchInput(!showSearchInput)}
-        >
-          🔍
-        </Text>
-        {showSearchInput && (
-          <TextInput
-            style={styles.searchInput}
-            placeholder="Search contacts"
-            value={searchQuery}
-            onChangeText={(text) => setSearchQuery(text)}
-          />
-        )}
-      </View>
+
+return (
+  <View style={styles.container}>
+    <View style={styles.header}>
+      <Text style={styles.headerText}>Total Contacts: {listData.length}</Text>
+      <Text
+        style={styles.searchText}
+        onPress={() => setShowSearchInput(!showSearchInput)}
+      >
+        🔍
+      </Text>
+      {showSearchInput && (
+        <TextInput
+          style={styles.searchInput}
+          placeholder="Search contacts"
+          value={searchQuery}
+          onChangeText={(text) => setSearchQuery(text)}
+        />
+      )}
+    </View>
       <Text
         style={styles.addIcon}
         onPress={() => navigation.navigate('AddNewContact')}
@@ -181,7 +188,39 @@ const ContactList: React.FC<ContactListProps> = ({ navigation, route }) => {
         <SwipeListView
           data={filteredContacts}
           renderItem={({ item }) => renderContactItem({ item })}
-          renderHiddenItem={renderHiddenItem}
+          renderHiddenItem={(data: any, rowMap: any) => (
+            <View style={styles.rowBack}>
+              <TouchableOpacity
+                style={[styles.backLeftBtn, styles.backBtn]}
+                onPress={() => showProfile(rowMap, data.item.id)}
+              >
+                <Text style={styles.backTextWhite}>Show</Text>
+              </TouchableOpacity>
+        
+              <TouchableOpacity
+                style={[styles.backRightBtn, styles.backRightBtnRight]}
+              >
+                <Text>Delete</Text>
+                <Text
+                  style={styles.backTextWhite}
+                  onPress={() =>
+                    Alert.alert('Delete', 'Deleted contact not restored', [
+                      {
+                        text: 'Cancel',
+                        onPress: () => console.warn('Cancel Pressed'),
+                        style: 'cancel',
+                      },
+                      {
+                        text: 'OK',
+                        // onPress: () => deleteContact(data.item.id),
+                        style: 'default',
+                      },
+                    ])
+                  }
+                />
+              </TouchableOpacity>
+            </View>
+          )}
           leftOpenValue={75}
           rightOpenValue={-75}
           previewRowKey={'0'}
@@ -256,6 +295,17 @@ const styles = StyleSheet.create({
   },
   backTextWhite: {
     color: '#FFF',
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: 10,
+    backgroundColor: '#F2F2F2',
+  },
+  headerText: {
+    fontSize: 16,
+    fontWeight: 'bold',
   },
 });
 

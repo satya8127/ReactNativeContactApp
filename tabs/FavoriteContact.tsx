@@ -1,40 +1,46 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, FlatList, TouchableOpacity, StyleSheet } from 'react-native';
 import { useIsFocused } from '@react-navigation/native';
-import API_URL from '../utils/environment';
 import { ContactInfo } from '../components/contactIcon';
-
-
-// interface ContactInfo {
-//   id: string;
-//   displayName: string;
-//   mobile: string;
-//   landline: string;
-//   favorite: boolean; // Assuming there's a 'favorite' property in your ContactInfo
-// }
-
+import AsyncStorage from '@react-native-async-storage/async-storage';
 const FavoriteContact: React.FC<{ navigation: any }> = ({ navigation }) => {
   const isFocused = useIsFocused();
   const [favoriteList, setFavoriteList] = useState<ContactInfo[]>([]);
 
   const getAllFavContacts = async () => {
-    const url = API_URL;
     try {
-      const res = await fetch(url);
-      const data: ContactInfo[] = await res.json();
-
-      if (Array.isArray(data)) {
-        console.log(data);
-        setFavoriteList(data);
-      }
+      // Load contacts from AsyncStorage
+      const keys = await AsyncStorage.getAllKeys();
+      const contactKeys = keys.filter((key) => key.startsWith('contact_'));
+      const contactArray = await AsyncStorage.multiGet(contactKeys);
+  
+      // Transform loaded data to ContactInfo objects
+      const loadedContacts = contactArray
+        .map(([key, value]) => {
+          const contactData = JSON.parse(value || ''); 
+          return {
+            id: key,
+            displayName: contactData?.displayName || '', 
+            color: '#E1E8FF', 
+            mobile: contactData?.mobile || '', 
+            email: contactData?.email || '', 
+            favorite: contactData?.favorite || false, 
+            image: contactData?.image || '', 
+          };
+        })
+        .filter((contact) => contact.displayName !== '');
+  
+      // Update the favorite contact list
+      setFavoriteList(loadedContacts);
     } catch (error) {
-      console.error('Error fetching data:', error);
+      console.error('Error loading favorite contacts:', error);
     }
   };
+  
 
   const myFavList = favoriteList
     .filter((item) => item.favorite === true)
-    .map(({ id, displayName, mobile, landline }) => ({ id, displayName, mobile, landline }));
+    .map(({ id, displayName, mobile, email }) => ({ id, displayName, mobile, email }));
 
   useEffect(() => {
     getAllFavContacts();

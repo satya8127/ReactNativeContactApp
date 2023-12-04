@@ -2,8 +2,7 @@ import React, { useState } from 'react';
 import { Text, View, StyleSheet, TextInput, Button, StatusBar, Switch, Image } from 'react-native';
 import { TouchableOpacity } from 'react-native-gesture-handler';
 //import ImagePicker, { ImageLibraryOptions, ImagePickerResponse } from 'react-native-image-picker';
-import AntDesign from 'react-native-vector-icons/AntDesign';
-import API_URL from '../utils/environment';
+
 import ImagePicker, { ImagePickerResponse } from 'react-native-image-picker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -14,9 +13,9 @@ interface CreateContactProps {
 const CreateContact: React.FC<CreateContactProps> = ({ navigation }) => {
   const [displayName, setDisplayName] = useState<string>('');
   const [mobile, setMobile] = useState<string | undefined>(undefined);
-  const [landline, setLandline] = useState<string | undefined>(undefined);
   const [favorite, setFavorite] = useState<boolean>(false);
   const [image, setImage] = useState('');
+  const [email, setEmail] = useState<string>('');
 
   const toggleSwitch = () => setFavorite((previousState) => !previousState);
 
@@ -28,7 +27,7 @@ const CreateContact: React.FC<CreateContactProps> = ({ navigation }) => {
  
   const newContact = async () => {
     console.warn('Save clicked');
-    const url = API_URL;
+
     
     // Generate a unique ID for the contact
     const contactId = 'contact_' + Date.now().toString();
@@ -38,7 +37,7 @@ const CreateContact: React.FC<CreateContactProps> = ({ navigation }) => {
       id: contactId,
       displayName,
       mobile,
-      landline,
+      email,
       favorite,
       image,
     };
@@ -52,9 +51,9 @@ const CreateContact: React.FC<CreateContactProps> = ({ navigation }) => {
       // Clear input fields and reset state
       setDisplayName('');
       setMobile(undefined);
-      setLandline(undefined);
+  
       setFavorite(false);
-      setImage('');
+      setEmail('');
     
       // Navigate to the 'ContactList' screen
       navigation.navigate('ContactList');
@@ -67,7 +66,7 @@ const CreateContact: React.FC<CreateContactProps> = ({ navigation }) => {
   return (
     <View style={styles.container}>
       <Text style={styles.txt}>
-        Mark as Fav: {favorite ? '✅' : '❌'}
+        Favourite: {favorite ? '✅' : '❌'}
         <Switch
           trackColor={{ false: '#767577', true: '#81b0ff' }}
           thumbColor={favorite ? '#f5dd4b' : '#f4f3f4'}
@@ -80,33 +79,40 @@ const CreateContact: React.FC<CreateContactProps> = ({ navigation }) => {
         📷
       </Text>
       <View style={styles.inputContainer}>
-        <TextInput
-          style={styles.input}
-          placeholder="Name"
-          value={displayName}
-          onChangeText={(text) => setDisplayName(text)}
-          clearButtonMode="always"
-        />
-        <TextInput
-          style={styles.input}
-          placeholder="Phone Number"
-          keyboardType="number-pad"
-          value={mobile}
-          onChangeText={(text) => setMobile(text)}
-          clearButtonMode="always"
-        />
-        <TextInput
-          style={styles.input}
-          placeholder="Landline Number"
-          keyboardType="number-pad"
-          value={landline}
-          onChangeText={(text) => setLandline(text)}
-          clearButtonMode="always"
-        />
-      </View>
+  <View style={styles.inputIconContainer}>
+    <Text style={styles.inputIcon}>👤</Text>
+    <TextInput
+      style={styles.input}
+      placeholder="Name"
+      value={displayName}
+      onChangeText={(text) => setDisplayName(text)}
+      clearButtonMode="always"
+    />
+  </View>
+  <View style={styles.inputIconContainer}>
+    <Text style={styles.inputIcon}>📞</Text>
+    <TextInput
+      style={styles.input}
+      placeholder="Phone Number"
+      keyboardType="number-pad"
+      value={mobile}
+      onChangeText={(text) => setMobile(text)}
+      clearButtonMode="always"
+    />
+  </View>
+  <View style={styles.inputIconContainer}>
+    <Text style={styles.inputIcon}>✉️</Text>
+    <TextInput
+      style={styles.input}
+      placeholder="Email"
+      value={email}
+      onChangeText={(text) => setEmail(text)}
+      clearButtonMode="always"
+    />
+  </View>
+</View>
       <View style={styles.btn}>
         <Button onPress={newContact} title="Save" />
-        <Button title="Close" color={'red'} onPress={() => navigation.navigate('ContactList')} />
       </View>
     </View>
   );
@@ -147,6 +153,15 @@ const styles = StyleSheet.create({
     height: 200,
     alignSelf: 'center',
     margin: 20,
+  },
+  inputIconContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: 10,
+  },
+  inputIcon: {
+    fontSize: 20,
+    marginRight: 10,
   },
 });
 

@@ -24,7 +24,6 @@ const ContactCard: React.FC<ContactCardProps> = ({ contactInfo }) => {
     <View style={styles.card}>
       <View style={styles.infoContainer}>
         <View style={{}}>
-          {/* <Text style={styles.iconContent}>{displayName[0]}</Text> */}
           <Pressable onPress={() => {}}>
                       <Image
                         style={{width: 40, height: 40, borderRadius: 50,marginRight:10}}

@@ -29,8 +29,8 @@ const MyProfile: React.FC<MyProfileProps> = ({ navigation, route }) => {
     color: '',
     mobile: '',
     email: '',
-      favorite: false,
-      image: ''
+    favorite: false,
+    image: ''
   });
 
   useEffect(() => {
@@ -50,16 +50,16 @@ const MyProfile: React.FC<MyProfileProps> = ({ navigation, route }) => {
   const deleteContact = async (contactId: string) => {
     try {
       console.log('Contact ID to Delete:', contactId);
-  
+
       // Fetch all keys from AsyncStorage
       const allKeys = await AsyncStorage.getAllKeys();
-  
+
       // Find the keys that match the contact ID
       const keysToDelete = allKeys.filter((key) => key.includes(contactId));
-  
+
       // Remove all items associated with the contact ID
       await AsyncStorage.multiRemove(keysToDelete);
-  
+
       console.warn('Contact deleted');
 
       navigation.navigate('ContactList');
@@ -67,22 +67,22 @@ const MyProfile: React.FC<MyProfileProps> = ({ navigation, route }) => {
       console.error('Error deleting contact:', error);
     }
   };
-  
-  
-  
+
+
+
   const addToFavorite = async (updateContactList: () => void, updateFavoriteList: () => void): Promise<void> => {
     try {
       const contactId = contactCardInfo.id.replace('contact_', ''); // Use contactCardInfo instead of updatedContactInfo
       const storedData = await AsyncStorage.getItem(contactId);
-  
+
       if (storedData) {
         const parsedData: ContactInfo = JSON.parse(storedData);
         const updatedData = { ...parsedData, favorite: true };
-  
+
         await AsyncStorage.setItem(contactId, JSON.stringify(updatedData));
-  
+
         console.log('Contact marked as favorite in AsyncStorage:', updatedData);
-  
+
         updateContactList();
         updateFavoriteList();
       }
@@ -90,37 +90,37 @@ const MyProfile: React.FC<MyProfileProps> = ({ navigation, route }) => {
       console.error('Error updating favorite status in AsyncStorage:', error);
     }
   };
-  
 
-  
-  
+
+
+
 
   return (
     <View style={styles.container}>
       <View style={{ ...styles.backgroundImage, backgroundColor: '#E1E8FF' }}>
-<Image
-                        style={{width: 80, height: 80, borderRadius: 50}}
-                        source={require('../images/download.png')}
-                      />
+        <Image
+          style={{ width: 80, height: 80, borderRadius: 50 }}
+          source={require('../images/download.png')}
+        />
         <TouchableOpacity
-  onPress={() =>
-    Alert.alert('Delete', 'Deleted contact not restored', [
-      {
-        text: 'Cancel',
-        onPress: () => console.warn('Cancel Pressed'),
-        style: 'cancel',
-      },
-      {
-        text: 'OK',
-        onPress: () => deleteContact(contactCardInfo.id.replace('contact_', '')),
-        style: 'default',
-      },
-    ])
-  }
-  style={{ ...styles.iconContainer, top: StatusBar.currentHeight || 0, right: 20 }}
->
-  <Text style={styles.iconText}>🗑️</Text>
-</TouchableOpacity>
+          onPress={() =>
+            Alert.alert('Delete', 'Deleted contact not restored', [
+              {
+                text: 'Cancel',
+                onPress: () => console.warn('Cancel Pressed'),
+                style: 'cancel',
+              },
+              {
+                text: 'OK',
+                onPress: () => deleteContact(contactCardInfo.id.replace('contact_', '')),
+                style: 'default',
+              },
+            ])
+          }
+          style={{ ...styles.iconContainer, top: StatusBar.currentHeight || 0, right: 20 }}
+        >
+          <Text style={styles.iconText}>🗑️</Text>
+        </TouchableOpacity>
 
         <TouchableOpacity
           onPress={() =>
@@ -141,8 +141,8 @@ const MyProfile: React.FC<MyProfileProps> = ({ navigation, route }) => {
           <Text style={styles.iconText}>⭐</Text>
         </TouchableOpacity>
         <Text style={styles.mainText}>{contactCardInfo.displayName}</Text>
-        </View>
-     
+      </View>
+
       <View style={{ flex: 1, marginTop: 20, backgroundColor: 'white' }}>
         <View style={styles.phoneNumberContainer}>
           <Text style={{ fontSize: 20, fontWeight: 'bold', marginLeft: 10 }}>
@@ -179,7 +179,7 @@ const styles = StyleSheet.create({
     fontSize: 30,
     color: '#4C6FFF',
     fontWeight: 'bold',
-    textTransform:'uppercase'
+    textTransform: 'uppercase'
   },
   phoneNumberContainer: {
     marginHorizontal: 10,

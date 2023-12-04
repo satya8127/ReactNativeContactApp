@@ -91,7 +91,7 @@ const ContactList: React.FC<ContactListProps> = ({ navigation, route }) => {
           id: selectedContact.id,
           displayName: selectedContact.displayName,
           mobile: selectedContact.mobile,
-        Email: selectedContact.email
+        email: selectedContact.email
         },
         
     // updateContactList: updateContactList,
